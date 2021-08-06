@@ -1,137 +1,97 @@
-#include <iostream>
 #include <QCoreApplication>
-#include <vector>
+#include <iostream>
 using namespace std;
 
-class InterfaceObeserver
-{
-private:
-
-public:
-    virtual ~InterfaceObeserver(){}
-    virtual void update()=0;
-};
-
-class InterfaceObservable
+class Node
 {
 public:
-    virtual ~InterfaceObservable(){}
-    virtual void AddObserver(InterfaceObeserver*)=0;
-    virtual bool RemoveObserver(InterfaceObeserver*)=0;
-    virtual void NotifyToObserver()=0;
+    int data;
+    Node *next;
+    Node(){ data=0; next = nullptr; }
+    Node(int d) {data = d; next = nullptr;}
 };
 
-class ConcreteObservable: public InterfaceObservable
+class Queue
 {
-private:
-     vector<InterfaceObeserver*> ListOfObserver;
-     int StateOfObservable;
 public:
-    void AddObserver(InterfaceObeserver* Observer)
+    Node *front,*rear;
+    Queue()
     {
-        ListOfObserver.push_back(Observer);
+        front = rear = nullptr;
     }
-
-   bool RemoveObserver(InterfaceObeserver* Observer)
-   {
-      for(auto it=ListOfObserver.begin();it!=ListOfObserver.end();it++)
-      {
-          if((*it)==Observer)
-          {
-              ListOfObserver.erase(it);
-              return true;
-
-          }
-      }
-      return false;
-   }
-
-   void NotifyToObserver()
-   {
-       for(auto it=ListOfObserver.begin();it!=ListOfObserver.end();it++)
-       {
-          (*it)->update();
-       }
-   }
-
-   int getState()
-   {
-       return StateOfObservable;
-   }
-
-   void setState(const int state)
-   {
-       StateOfObservable = state;
-       NotifyToObserver();
-   }
-
+    bool isEmpty();
+    void enqueue(int);
+    void dequeue();
+    void print();
 };
 
-
-class ConcreteObserver1 : public InterfaceObeserver
+bool Queue::isEmpty()
 {
-private:
-    ConcreteObservable *localobservableobj;
-public:
-    ConcreteObserver1(ConcreteObservable *Observable)
-    {
-        this->localobservableobj = Observable;
-        localobservableobj->AddObserver(this);
-    }
-    void update()
-    {
-       cout << "Observer : 1 "    << this->localobservableobj->getState() << endl;
-    }
-};
+    if(front==nullptr && rear==nullptr)
+        return true;
+    else
+        return false;
+}
 
-class ConcreteObserver2 : public InterfaceObeserver
+void Queue::enqueue(int data)
 {
-private:
-    ConcreteObservable *localobservableobj;
-public:
-    ConcreteObserver2(ConcreteObservable *Observable)
+    Node *new_node =  new Node(data);
+    if(isEmpty())
     {
-        this->localobservableobj = Observable;
-        localobservableobj->AddObserver(this);
+        front = rear = new_node;
+        return;
     }
-    void update()
+    else
     {
-       cout << "Observer : 2 "    << this->localobservableobj->getState() << endl;
+        rear->next = new_node;
+        rear = new_node;
     }
-};
+}
 
-class ConcreteObserver3 : public InterfaceObeserver
+void Queue::dequeue()
 {
-private:
-    ConcreteObservable *localobservableobj;
-public:
-    ConcreteObserver3(ConcreteObservable *Observable)
+    if(isEmpty())
     {
-        this->localobservableobj = Observable;
-        localobservableobj->AddObserver(this);
+        cout << "Queue is Empty" << endl;
     }
-    void update()
+    else
     {
-       cout << "Observer : 3 "    << this->localobservableobj->getState() << endl;
+        Node *temp = front;
+        front = front->next;
+        if(front==nullptr)
+        {
+            rear = nullptr;
+        }
+        delete temp;
     }
-};
+}
 
-
-
-
+void Queue::print()
+{
+    Node *temp = front;
+    while(temp!=nullptr)
+    {
+        cout << temp->data << " ";
+        temp = temp->next;
+    }
+    cout << endl;
+}
 
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    ConcreteObservable *observable = new ConcreteObservable();
-    ConcreteObserver1 *observer1 = new ConcreteObserver1(observable);
-    ConcreteObserver2 *observer2 = new ConcreteObserver2(observable);
-    ConcreteObserver3 *observer3 = new ConcreteObserver3(observable);
-    observable->setState(10);
-    observable->RemoveObserver(observer1);
-    observable->setState(20);
-
+    Queue myq;
+    myq.enqueue(10);
+    myq.enqueue(20);
+    myq.enqueue(30);
+    myq.enqueue(40);
+    myq.print();
+    myq.dequeue();
+    myq.print();
+    myq.dequeue();
+    myq.print();
 
     return a.exec();
 }
+
